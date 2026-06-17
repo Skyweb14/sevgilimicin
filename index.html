@@ -785,11 +785,11 @@
       </div>
       <div class="photo-grid">
         <figure class="photo-card reveal">
-          <img src="assets/memory-beach.jpeg" alt="Çocukluk anısı gibi sıcak bir sahil fotoğrafı">
+          <img src="memory-beach.jpeg" alt="Çocukluk anısı gibi sıcak bir sahil fotoğrafı">
           <figcaption>Birbirimize hep böyle sarılalım.</figcaption>
         </figure>
         <figure class="photo-card reveal">
-          <img src="assets/memory-studio.jpeg" alt="Çocukluk anısı gibi sıcak bir stüdyo fotoğrafı">
+          <img src="memory-studio.jpeg" alt="Çocukluk anısı gibi sıcak bir stüdyo fotoğrafı">
           <figcaption>Yıllar geçse de içimizdeki masumiyet kalsın.</figcaption>
         </figure>
       </div>
@@ -826,7 +826,7 @@
     </section>
   </main>
 
-  <audio id="song" src="assets/music.mp3" preload="metadata" loop></audio>
+  <audio id="song" src="music.mp3" preload="metadata" loop></audio>
 
   <script>
     const SETTINGS = {
@@ -952,7 +952,7 @@
     audio.addEventListener("ended", () => setPlayIcon(false));
     audio.addEventListener("error", () => {
       songTitle.textContent = SETTINGS.fallbackSongTitle;
-      songHint.textContent = "assets/music.mp3 ekleyebilir veya şarkı seçebilirsin";
+      songHint.textContent = "music.mp3 ekleyebilir veya şarkı seçebilirsin";
     });
 
     const observer = new IntersectionObserver((entries) => {
