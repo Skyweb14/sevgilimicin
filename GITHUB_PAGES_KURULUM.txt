@@ -1,0 +1,27 @@
+GitHub Pages ile yayinlama:
+
+1. GitHub hesabina gir.
+2. New repository olustur.
+   - Repository adi ornek: sevgilim-icin
+   - Public secersen GitHub Pages ucretsiz calisir.
+3. Bu klasordeki dosyalari repository ana dizinine yukle:
+   - index.html
+   - assets klasoru
+   - .nojekyll
+4. Repository sayfasinda Settings > Pages bolumune gir.
+5. Source olarak Deploy from a branch sec.
+6. Branch: main, Folder: /root sec ve Save de.
+7. Birkaç dakika sonra site su sekilde acilir:
+   https://KULLANICI_ADIN.github.io/REPO_ADI/
+
+Kendi domainini baglamak icin:
+
+1. Settings > Pages > Custom domain alanina domainini yaz.
+   Ornek: senindomainin.com
+2. GitHub sana DNS kayitlarini gosterecek.
+3. Domaini aldigin yerde DNS bolumune girip GitHub'in verdigi kayitlari ekle.
+4. GitHub Pages ekraninda Enforce HTTPS secenegini aktif et.
+
+Not:
+- Sarki dosyasi assets/music.mp3 olarak hazir.
+- GitHub Pages public yayin yaptigi icin site linki olan herkes sayfayi gorebilir.
