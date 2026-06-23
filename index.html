@@ -578,6 +578,140 @@
       color: var(--gold);
     }
 
+    .daily-notes {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .note-form,
+    .notes-wall {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 248, 244, 0.1);
+      backdrop-filter: blur(18px);
+    }
+
+    .note-form {
+      padding: 22px;
+    }
+
+    .note-form label {
+      display: block;
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .note-form input,
+    .note-form textarea {
+      width: 100%;
+      margin-top: 10px;
+      border: 1px solid rgba(255, 248, 244, 0.22);
+      border-radius: 8px;
+      background: rgba(20, 9, 20, 0.48);
+      color: var(--ink);
+      outline: 0;
+    }
+
+    .note-form input {
+      height: 44px;
+      padding: 0 14px;
+      margin-bottom: 16px;
+    }
+
+    .note-form textarea {
+      min-height: 150px;
+      resize: vertical;
+      padding: 14px;
+      line-height: 1.55;
+    }
+
+    .note-form input:focus,
+    .note-form textarea:focus {
+      border-color: rgba(255, 210, 138, 0.72);
+      box-shadow: 0 0 0 3px rgba(255, 210, 138, 0.14);
+    }
+
+    .note-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .note-status {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .note-actions button {
+      min-height: 42px;
+      border-radius: 999px;
+      padding: 0 16px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .save-note {
+      background: linear-gradient(135deg, var(--rose), var(--coral));
+      box-shadow: 0 14px 30px rgba(255, 95, 126, 0.22);
+    }
+
+    .clear-notes {
+      background: var(--glass);
+      border: 1px solid var(--line);
+    }
+
+    .notes-wall {
+      min-height: 330px;
+      padding: 18px;
+    }
+
+    .note-empty {
+      min-height: 292px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+      border: 1px dashed rgba(255, 248, 244, 0.24);
+      border-radius: 8px;
+    }
+
+    .note-card {
+      padding: 16px;
+      border: 1px solid rgba(255, 248, 244, 0.18);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(255, 216, 90, 0.18), transparent 120px),
+        rgba(20, 9, 20, 0.28);
+    }
+
+    .note-card + .note-card {
+      margin-top: 12px;
+    }
+
+    .note-card strong {
+      display: block;
+      color: var(--gold);
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+
+    .note-card p {
+      margin: 0;
+      color: #ffe8df;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
     .finale {
       min-height: 78svh;
       display: grid;
@@ -645,6 +779,10 @@
 
       .hero-grid,
       .promise {
+        grid-template-columns: 1fr;
+      }
+
+      .daily-notes {
         grid-template-columns: 1fr;
       }
 
@@ -818,6 +956,22 @@
       </div>
     </section>
 
+    <section class="shell daily-notes" id="notlar">
+      <div class="note-form reveal">
+        <h2 class="section-title">Günlük notlarımız</h2>
+        <label for="noteAuthor">Kim yazıyor?</label>
+        <input id="noteAuthor" type="text" maxlength="32" placeholder="Ben / Sen">
+        <label for="noteText">Bugünün notu</label>
+        <textarea id="noteText" maxlength="700" placeholder="Bugün içinden geçen güzel bir şeyi buraya bırak..."></textarea>
+        <div class="note-actions">
+          <button class="save-note" id="saveNote" type="button">Notu kaydet</button>
+          <button class="clear-notes" id="clearNotes" type="button">Notları temizle</button>
+        </div>
+        <p class="note-status" id="noteStatus">Ortak defter bağlantısı kontrol ediliyor.</p>
+      </div>
+      <div class="notes-wall reveal" id="notesWall" aria-live="polite"></div>
+    </section>
+
     <section class="finale shell">
       <div>
         <h2 class="reveal">Mesafeye rağmen kalbimin en yakın yerindesin.</h2>
@@ -828,10 +982,33 @@
 
   <audio id="song" src="music.mp3" preload="metadata" loop></audio>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      addDoc,
+      collection,
+      deleteDoc,
+      doc,
+      getDocs,
+      getFirestore,
+      limit,
+      onSnapshot,
+      orderBy,
+      query,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
     const SETTINGS = {
       relationshipStart: "2026-06-14",
-      fallbackSongTitle: "Canımdan Can İste (Senin Uğruna)"
+      fallbackSongTitle: "Canımdan Can İste (Senin Uğruna)",
+      firebaseConfig: {
+        apiKey: "AIzaSyDuyRll5ThXpYprWQPzfw6nVX0mPXTQWUo",
+        authDomain: "sevgilim-97fff.firebaseapp.com",
+        projectId: "sevgilim-97fff",
+        storageBucket: "sevgilim-97fff.firebasestorage.app",
+        messagingSenderId: "763342002543",
+        appId: "1:763342002543:web:20c9fe111cd47b4bccf09a"
+      }
     };
 
     const canvas = document.getElementById("sky");
@@ -845,10 +1022,20 @@
     const songTitle = document.getElementById("songTitle");
     const songHint = document.getElementById("songHint");
     const daysTogether = document.getElementById("daysTogether");
+    const noteAuthor = document.getElementById("noteAuthor");
+    const noteText = document.getElementById("noteText");
+    const saveNote = document.getElementById("saveNote");
+    const clearNotes = document.getElementById("clearNotes");
+    const notesWall = document.getElementById("notesWall");
+    const noteStatus = document.getElementById("noteStatus");
     const revealItems = document.querySelectorAll(".reveal");
 
     let stars = [];
     let rafId = 0;
+    const notesKey = "fistigim-daily-notes-v1";
+    let db = null;
+    let notesCollection = null;
+    let cloudNotesEnabled = false;
 
     function resizeCanvas() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -939,6 +1126,139 @@
       daysTogether.textContent = diff.toLocaleString("tr-TR");
     }
 
+    function getNotes() {
+      try {
+        return JSON.parse(localStorage.getItem(notesKey)) || [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveNotes(notes) {
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+    }
+
+    function hasFirebaseConfig() {
+      return Boolean(
+        SETTINGS.firebaseConfig.apiKey &&
+        SETTINGS.firebaseConfig.projectId &&
+        SETTINGS.firebaseConfig.appId
+      );
+    }
+
+    function initNotesDatabase() {
+      if (!hasFirebaseConfig()) {
+        noteStatus.textContent = "Şimdilik yerel modda: notlar sadece bu cihazda saklanır.";
+        renderNotes();
+        return;
+      }
+
+      try {
+        const app = initializeApp(SETTINGS.firebaseConfig);
+        db = getFirestore(app);
+        notesCollection = collection(db, "dailyNotes");
+        cloudNotesEnabled = true;
+        noteStatus.textContent = "Ortak defter bağlı: notlar ikinizde de canlı görünür.";
+        subscribeCloudNotes();
+      } catch (error) {
+        cloudNotesEnabled = false;
+        noteStatus.textContent = "Firebase bağlantısı kurulamadı; notlar bu cihazda saklanıyor.";
+        renderNotes();
+      }
+    }
+
+    function formatDate(value) {
+      return new Intl.DateTimeFormat("tr-TR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(value));
+    }
+
+    function renderNotes() {
+      const notes = getNotes();
+      renderNotesList(notes);
+    }
+
+    function renderNotesList(notes) {
+      if (!notes.length) {
+        notesWall.innerHTML = '<div class="note-empty">Buraya ilk notunuzu bırakın. Küçük bir cümle bile bazen bütün günü güzelleştirir.</div>';
+        return;
+      }
+
+      notesWall.innerHTML = notes.map((note) => `
+        <article class="note-card">
+          <strong>${escapeHtml(note.author)} - ${formatDate(note.createdAt)}</strong>
+          <p>${escapeHtml(note.text)}</p>
+        </article>
+      `).join("");
+    }
+
+    function subscribeCloudNotes() {
+      const notesQuery = query(notesCollection, orderBy("createdAt", "desc"), limit(60));
+      onSnapshot(notesQuery, (snapshot) => {
+        const notes = snapshot.docs.map((noteDoc) => {
+          const data = noteDoc.data();
+          return {
+            id: noteDoc.id,
+            author: data.author || "Biz",
+            text: data.text || "",
+            createdAt: data.createdAt?.toDate?.().toISOString?.() || new Date().toISOString()
+          };
+        });
+        renderNotesList(notes);
+      }, () => {
+        cloudNotesEnabled = false;
+        noteStatus.textContent = "Ortak defter okunamadı; Firebase kurallarını kontrol et.";
+        renderNotes();
+      });
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function addNote() {
+      const author = noteAuthor.value.trim() || "Biz";
+      const text = noteText.value.trim();
+      if (!text) {
+        noteText.focus();
+        return;
+      }
+
+      saveNote.disabled = true;
+      try {
+        if (cloudNotesEnabled) {
+          await addDoc(notesCollection, {
+            author,
+            text,
+            createdAt: serverTimestamp()
+          });
+        } else {
+          const notes = getNotes();
+          notes.unshift({
+            author,
+            text,
+            createdAt: new Date().toISOString()
+          });
+          saveNotes(notes.slice(0, 60));
+          renderNotes();
+        }
+        noteText.value = "";
+      } catch (error) {
+        noteStatus.textContent = "Not kaydedilemedi; bağlantı veya Firebase kurallarını kontrol et.";
+      } finally {
+        saveNote.disabled = false;
+      }
+    }
+
     songPicker.addEventListener("change", () => {
       const [file] = songPicker.files;
       if (!file) return;
@@ -949,6 +1269,33 @@
     });
 
     playPause.addEventListener("click", toggleAudio);
+    saveNote.addEventListener("click", addNote);
+    clearNotes.addEventListener("click", async () => {
+      if (!cloudNotesEnabled && !getNotes().length) return;
+      const confirmed = window.confirm(cloudNotesEnabled ? "Ortak defterdeki notlar temizlensin mi?" : "Bu cihazdaki kayitli notlar temizlensin mi?");
+      if (!confirmed) return;
+      clearNotes.disabled = true;
+      try {
+        if (cloudNotesEnabled) {
+          const snapshot = await getDocs(notesCollection);
+          await Promise.all(snapshot.docs.map((noteDoc) => deleteDoc(doc(db, "dailyNotes", noteDoc.id))));
+        } else {
+          saveNotes([]);
+          renderNotes();
+        }
+      } catch (error) {
+        noteStatus.textContent = "Notlar temizlenemedi; Firebase kurallarını kontrol et.";
+      } finally {
+        clearNotes.disabled = false;
+      }
+    });
+
+    noteText.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        addNote();
+      }
+    });
+
     audio.addEventListener("ended", () => setPlayIcon(false));
     audio.addEventListener("error", () => {
       songTitle.textContent = SETTINGS.fallbackSongTitle;
@@ -974,6 +1321,7 @@
     buildHearts();
     buildDaffodils();
     updateCounter();
+    initNotesDatabase();
 
     window.addEventListener("beforeunload", () => cancelAnimationFrame(rafId));
   </script>
